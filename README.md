@@ -5,6 +5,8 @@
 
 ---
 
+A unified database management server that acts as a bridge between client applications and various database engines, providing a consistent interface for database operations and schema exploration.
+
 ## Table of Contents
 
 - [Installation](#installation)

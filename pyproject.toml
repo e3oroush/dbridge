@@ -24,6 +24,10 @@ dependencies = [
   "pydantic-settings==2.7.0",
   "fastapi==0.115.6",
   "uvicorn==0.34.0",
+  "numpy==2.2.1",
+  "pandas==2.2.3",
+  "duckdb==1.1.3",
+  "pyyaml==6.0.2",
 ]
 
 [project.urls]
@@ -49,14 +53,14 @@ run-coverage = "pytest --cov-config=pyproject.toml --cov=pkg --cov=tests"
 run = "run-coverage --no-cov"
 
 [tool.coverage.run]
-source_pkgs = ["dbridge", "tests"]
+source_pkgs = ["dbridge", "tests", "server"]
 branch = true
 parallel = true
 omit = ["src/dbridge/__about__.py"]
 
 [tool.coverage.paths]
-dbridge = ["src/dbridge", "*/dbridge/src/dbridge"]
-tests = ["tests", "*/dbridge/tests"]
+dbridge = ["src/dbridge", "*/dbridge/src/dbridge", "server"]
+tests = ["tests", "*/dbridge/tests", "server"]
 
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]

@@ -1,10 +1,9 @@
-from dbridge.adapters.dbs.sqllite import SqliteAdapter
+from dbridge.adapters.dbs.duckdb import DuckdbAdapter
 import pytest
 
 
 def init_db():
-    sqlite = SqliteAdapter(":memory:")
-    cur = sqlite.con.cursor()
+    db = DuckdbAdapter(":memory:")
     queries = [
         """CREATE TABLE contacts (
 	contact_id INTEGER PRIMARY KEY,
@@ -22,18 +21,14 @@ def init_db():
    group_id INTEGER,
    PRIMARY KEY (contact_id, group_id),
    FOREIGN KEY (contact_id) 
-      REFERENCES contacts (contact_id) 
-         ON DELETE CASCADE 
-         ON UPDATE NO ACTION,
+      REFERENCES contacts (contact_id),
    FOREIGN KEY (group_id) 
       REFERENCES groups (group_id) 
-         ON DELETE CASCADE 
-         ON UPDATE NO ACTION
 );""",
     ]
     for q in queries:
-        cur.execute(q)
-    return queries, sqlite
+        db.run_query(q)
+    return queries, db
 
 
 def test_show_tables():

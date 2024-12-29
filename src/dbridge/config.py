@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     default_logging_level: str = Field("INFO", validation_alias="logging_level")
     app_name: str = Field("dbridge")
     # NOTE: Extra is needed to use validation_alias to replace value see https://github.com/pydantic/pydantic-settings/issues/148
-    model_config = SettingsConfigDict(env_prefix="dbridge", extra="allow")
+    model_config = SettingsConfigDict(env_prefix="dbridge_", extra="allow")
 
 
 settings = Settings()
