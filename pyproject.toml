@@ -53,16 +53,16 @@ run-coverage = "pytest --cov-config=pyproject.toml --cov=pkg --cov=tests"
 run = "run-coverage --no-cov"
 
 [tool.coverage.run]
-source_pkgs = ["dbridge", "tests", "server"]
+source_pkgs = ["dbridge", "tests"]
 branch = true
 parallel = true
 omit = ["src/dbridge/__about__.py"]
 
 [tool.coverage.paths]
-dbridge = ["src/dbridge", "*/dbridge/src/dbridge", "server"]
-tests = ["tests", "*/dbridge/tests", "server"]
+dbridge = ["src/dbridge", "*/dbridge/src/dbridge"]
+tests = ["tests", "*/dbridge/tests"]
 
 [tool.coverage.report]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 [tool.hatch.envs.default.scripts]
-start_server = "uvicorn server.main:app"
+start_server = "python -m dbridge.server.app"

@@ -1,4 +1,4 @@
-from config import add_connection, ConnectionConfig, get_connections
+from dbridge.server.config import add_connection, ConnectionConfig, get_connections
 
 
 def test_add_connection():

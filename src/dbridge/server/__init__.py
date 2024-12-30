@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from dbridge.adapters.interfaces import DBAdapter
 from dbridge.adapters.dbs import SqliteAdapter, DuckdbAdapter
-from config import (
+from .config import (
     ConnectionConfig,
     ConnectionParam,
     QueryParam,
@@ -57,5 +57,5 @@ def query_table(connection_id: str, table_name) -> list[dict]:
 
 @app.post("/run_query")
 def run_query(param: QueryParam) -> list[dict]:
-    assert (con := connections.get(param.uri))
+    assert (con := connections.get(param.connection_id))
     return con.run_query(param.query)
