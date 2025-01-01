@@ -3,6 +3,7 @@ from dbridge.adapters.interfaces import DBAdapter
 from dbridge.adapters.dbs import SqliteAdapter, DuckdbAdapter
 from .config import (
     ConnectionConfig,
+    ConnectionConfigApi,
     ConnectionParam,
     QueryParam,
     add_connection,
@@ -26,14 +27,14 @@ def get_saved_connections() -> list[ConnectionConfig]:
 
 
 @app.post("/connections")
-def create_connection(params: ConnectionParam) -> str:
+def create_connection(params: ConnectionParam) -> ConnectionConfigApi:
     add_connection(params)
     uri = params.uri
     if params.adapter == "sqlite":
         connections[params.get_id()] = SqliteAdapter(uri)
     elif params.adapter == "duckdb":
         connections[params.get_id()] = DuckdbAdapter(uri)
-    return params.get_id()
+    return ConnectionConfigApi(name=params.name, connection_id=params.get_id())
 
 
 @app.get("/get_tables")

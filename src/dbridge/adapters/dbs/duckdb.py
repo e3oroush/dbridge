@@ -1,5 +1,5 @@
 import duckdb
-from duckdb import DuckDBPyConnection, DuckDBPyRelation
+from duckdb import DuckDBPyConnection
 from pathlib import Path
 from dbridge.logging import get_logger
 

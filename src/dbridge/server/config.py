@@ -32,6 +32,11 @@ class ConnectionParam(ConnectionConfig):
         return hashlib.md5(f"{self.uri}-{self.name}".encode()).hexdigest()
 
 
+class ConnectionConfigApi(BaseModel):
+    connection_id: str
+    name: str
+
+
 class QueryParam(BaseModel):
     connection_id: str
     query: str
