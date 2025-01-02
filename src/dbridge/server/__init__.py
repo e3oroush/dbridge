@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from dbridge.adapters.dbs.models import DbCatalog
 from dbridge.adapters.interfaces import DBAdapter
 from dbridge.adapters.dbs import SqliteAdapter, DuckdbAdapter
 from .config import (
@@ -54,6 +55,12 @@ def query_table(connection_id: str, table_name) -> list[dict]:
     assert (con := connections.get(connection_id))
     query = f"select * from {table_name};"
     return con.run_query(query)
+
+
+@app.get("/get_dbs_schemas_tables")
+def get_all(connection_id: str) -> list[DbCatalog]:
+    assert (con := connections.get(connection_id))
+    return con.show_tables_schema_dbs()
 
 
 @app.post("/run_query")

@@ -1,6 +1,9 @@
+from os import name
 from pathlib import Path
 import sqlite3
 from sqlite3 import Connection, Cursor
+
+from dbridge.adapters.dbs.models import DbCatalog, SchemaCatalog
 
 
 class SqliteAdapter:
@@ -38,6 +41,14 @@ class SqliteAdapter:
             "SELECT name FROM PRAGMA_TABLE_INFO(?);", (table_name,)
         ).fetchall()
         return self._flatten(result)
+
+    def show_tables_schema_dbs(self) -> list[DbCatalog]:
+        return [
+            DbCatalog(
+                name="sqliteDb",
+                schemas=[SchemaCatalog(name="main", tables=self.show_tables())],
+            )
+        ]
 
     def run_query(self, query: str, limit=100) -> list[dict]:
         cur = self._get_cursor()

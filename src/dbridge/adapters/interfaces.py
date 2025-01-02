@@ -1,18 +1,14 @@
-from abc import ABC, abstractmethod
+from typing import Protocol
+from .dbs.models import DbCatalog
 
 
-class DBAdapter(ABC):
-    @abstractmethod
-    def show_dbs(self) -> list[str]:
-        raise NotImplementedError
+class DBAdapter(Protocol):
+    def show_dbs(self) -> list[str]: ...
 
-    @abstractmethod
-    def show_tables(self) -> list[str]:
-        raise NotImplementedError
+    def show_tables(self) -> list[str]: ...
 
-    @abstractmethod
-    def show_columns(self, table_name: str) -> list[str]:
-        raise NotImplementedError
+    def show_columns(self, table_name: str) -> list[str]: ...
 
-    def run_query(self, query: str) -> list[dict]:
-        raise NotImplementedError
+    def show_tables_schema_dbs(self) -> list[DbCatalog]: ...
+
+    def run_query(self, query: str) -> list[dict]: ...
