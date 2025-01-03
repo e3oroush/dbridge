@@ -44,7 +44,7 @@ extra-dependencies = ["mypy>=1.0.0"]
 check = "mypy --install-types --non-interactive {args:src/dbridge tests}"
 
 [tool.hatch.envs.dev]
-dependencies = ["ruff", "black", "pyright", "pytest", "ipython"]
+dependencies = ["ruff", "black", "isort", "pyright", "pytest", "ipython"]
 
 [tool.hatch.envs.test]
 dependencies = ["coverage[toml]", "pytest", "pytest-cov", "pytest-mock"]

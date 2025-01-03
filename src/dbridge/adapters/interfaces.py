@@ -1,8 +1,11 @@
 from typing import Protocol
+
 from .dbs.models import DbCatalog
 
 
 class DBAdapter(Protocol):
+    adapter_name: str
+
     def show_dbs(self) -> list[str]: ...
 
     def show_tables(self) -> list[str]: ...
@@ -12,3 +15,8 @@ class DBAdapter(Protocol):
     def show_tables_schema_dbs(self) -> list[DbCatalog]: ...
 
     def run_query(self, query: str) -> list[dict]: ...
+
+    def is_single_connection(self) -> bool: ...
+
+    @property
+    def uri(self) -> str: ...

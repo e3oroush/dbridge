@@ -1,13 +1,17 @@
+from pathlib import Path
+
 import duckdb
 from duckdb import DuckDBPyConnection
-from pathlib import Path
+
 from dbridge.logging import get_logger
+
 from .models import DbCatalog
 
 
 class DuckdbAdapter:
     def __init__(self, uri: str) -> None:
         self.uri = uri
+        self.adapter_name = "duckdb"
         self.con: DuckDBPyConnection | None = None
         self.logger = get_logger()
         self._connect()
@@ -36,21 +40,39 @@ class DuckdbAdapter:
     def _flatten(self, result: list[tuple[str]]) -> list[str]:
         return [t[0] for t in result]
 
+    @property
+    def uri(self) -> str:
+        return self._uri
+
+    @uri.setter
+    def uri(self, value: str):
+        self._uri = value
+
+    def is_single_connection(self) -> bool:
+        return True
+
     def show_tables(self) -> list[str]:
         # Returns a list of tuples
-        query = "show tables;"
+        query = "select table_name from information_schema.tables;"
         result = self._execute_query(query).fetchall()
         return self._flatten(result)
 
     def show_columns(self, table_name: str) -> list[str]:
         # Returns a list of tuples
         # TODO: change this to use information_schema.columns table instead
-        query = f"select column_name from (describe {table_name})"
-        result = self._execute_query(query).fetchall()
+        query = "select column_name from information_schema.columns where table_name=?;"
+        result = self._execute_query(query, (table_name,)).fetchall()
         return self._flatten(result)
 
     def show_tables_schema_dbs(self) -> list[DbCatalog]:
-        """Returns databases with their schemas and tables"""
+        """Returns a list of `DbCatalog` objects containing databases with their schemas and tables.
+
+        :return: list[DbCatalog]
+
+        The function fetches the database names, schema names, and table names from the 'information_schema.tables' view in the database using an SQL query. Then it groups the results by database name and for each database, it further groups the tables by their associated schemas. Finally, it returns a list of `DbCatalog` objects after validating them using the `model_validate()` method.
+
+        :raises KeyError: If the required columns in the 'information_schema.tables' view are not found or missing in the database.
+        """
         dbname = "table_catalog"
         schema = "table_schema"
         table = "table_name"
