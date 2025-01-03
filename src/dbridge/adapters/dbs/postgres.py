@@ -8,17 +8,17 @@ from dbridge.adapters.interfaces import DBAdapter
 from .models import INSTALLED_ADAPTERS, DbCatalog
 
 try:
-    import pymysql
+    import psycopg2
 
-    INSTALLED_ADAPTERS.append("mysql")
+    INSTALLED_ADAPTERS.append("postgres")
 except ImportError:
     pass
 
 
-class MySqlAdapter(DBAdapter):
+class PostgresAdapter(DBAdapter):
     def __init__(self, uri: str) -> None:
         super().__init__(uri)
-        self.adapter_name = "mysql"
+        self.adapter_name = "postgres"
         self.db_connection: Engine = create_engine(uri)
 
     def is_single_connection(self) -> bool:
@@ -26,31 +26,26 @@ class MySqlAdapter(DBAdapter):
 
     def show_dbs(self) -> list[str]:
         query = (
-            "select distinct TABLE_SCHEMA as database from information_schema.tables"
+            "select distinct table_catalog as database from information_schema.tables"
         )
         dbs = self.run_query(query)
-        return [
-            db
-            for d in dbs
-            if (db := d["database"])
-            not in ["information_schema", "mysql", "performance_schema", "sys"]
-        ]
+        return [d["database"] for d in dbs]
 
     def show_tables(self) -> list[str]:
-        query = 'SELECT TABLE_NAME as tbl FROM information_schema.tables where TABLE_SCHEMA not in ("sys", "mysql", "inforrmation_schema", "performance_schema")'
+        query = "SELECT TABLE_NAME as tbl FROM information_schema.tables"
         tables = self.run_query(query, 500)
         return [d["tbl"] for d in tables]
 
     def show_columns(self, table_name: str) -> list[str]:
-        query = f'SELECT COLUMN_NAME as col FROM information_schema.columns where TABLE_NAME="{table_name}"'
+        query = f"SELECT COLUMN_NAME as col FROM information_schema.columns where TABLE_NAME='{table_name}'"
         columns = self.run_query(query)
         return [d["col"] for d in columns]
 
     def show_tables_schema_dbs(self) -> list[DbCatalog]:
         dbname = "dbname"
-        schema = "cschema"
-        table = "ctable"
-        query = f'SELECT TABLE_CATALOG as {schema}, TABLE_SCHEMA as {dbname}, TABLE_NAME as {table} FROM information_schema.tables where TABLE_SCHEMA not in ("sys", "mysql", "information_schema", "performance_schema")'
+        schema = "schema_name"
+        table = "tbl_name"
+        query = f"select table_catalog as {dbname}, table_schema as {schema}, table_name as {table} from information_schema.tables"
         df = pd.DataFrame(self.run_query(query, 500))
         result = (
             df.groupby(dbname, group_keys=True)[[dbname, schema, table]]

@@ -10,6 +10,7 @@ from pydantic_settings import BaseSettings
 
 from dbridge.adapters.dbs import DuckdbAdapter, SqliteAdapter
 from dbridge.adapters.dbs.mysql import MySqlAdapter
+from dbridge.adapters.dbs.postgres import PostgresAdapter
 from dbridge.adapters.interfaces import DBAdapter
 from dbridge.logging import get_logger
 
@@ -62,12 +63,14 @@ class QueryParam(BaseModel):
 
 def create_adapter_connection(adapter_name: str, uri: str) -> DBAdapter:
     connection = None
-    if adapter_name == "sqllite":
+    if adapter_name == "sqlite":
         connection = SqliteAdapter(uri)
     elif adapter_name == "duckdb":
         connection = DuckdbAdapter(uri)
     elif adapter_name == "mysql":
         connection = MySqlAdapter(uri)
+    elif adapter_name == "postgres":
+        connection = PostgresAdapter(uri)
     if not connection:
         raise ValueError(f"adapter name={adapter_name} is invalid.")
     return connection
