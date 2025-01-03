@@ -3,12 +3,13 @@ from pathlib import Path
 import duckdb
 from duckdb import DuckDBPyConnection
 
+from dbridge.adapters.interfaces import DBAdapter
 from dbridge.logging import get_logger
 
 from .models import DbCatalog
 
 
-class DuckdbAdapter:
+class DuckdbAdapter(DBAdapter):
     def __init__(self, uri: str) -> None:
         self.uri = uri
         self.adapter_name = "duckdb"

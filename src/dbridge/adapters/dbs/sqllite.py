@@ -3,9 +3,10 @@ from pathlib import Path
 from sqlite3 import Connection, Cursor
 
 from dbridge.adapters.dbs.models import DbCatalog, SchemaCatalog
+from dbridge.adapters.interfaces import DBAdapter
 
 
-class SqliteAdapter:
+class SqliteAdapter(DBAdapter):
     def __init__(self, uri: str) -> None:
         self.uri = uri
         self.adapter_name = "sqlite"
