@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from dbridge.adapters.dbs.models import DbCatalog
+from dbridge.adapters.dbs.models import INSTALLED_ADAPTERS, DbCatalog
 from dbridge.logging import get_logger
 
 from .config import (
@@ -21,7 +21,7 @@ connections = Connections()
 
 @app.get("/adapters")
 def get_available_adapaters() -> list[str]:
-    return ["sqlite", "duckdb"]
+    return INSTALLED_ADAPTERS
 
 
 @app.get("/connections")

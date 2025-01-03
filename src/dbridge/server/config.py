@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 
 from dbridge.adapters.dbs import DuckdbAdapter, SqliteAdapter
+from dbridge.adapters.dbs.mysql import MySqlAdapter
 from dbridge.adapters.interfaces import DBAdapter
 from dbridge.logging import get_logger
 
@@ -23,7 +24,7 @@ def get_config_directory() -> Path:
 
 
 class ConnectionConfig(BaseModel):
-    adapter: Literal["sqlite", "duckdb"]
+    adapter: str
     uri: str
 
     def __eq__(self, other) -> bool:
@@ -59,6 +60,19 @@ class QueryParam(BaseModel):
     connection_name: str = "default"
 
 
+def create_adapter_connection(adapter_name: str, uri: str) -> DBAdapter:
+    connection = None
+    if adapter_name == "sqllite":
+        connection = SqliteAdapter(uri)
+    elif adapter_name == "duckdb":
+        connection = DuckdbAdapter(uri)
+    elif adapter_name == "mysql":
+        connection = MySqlAdapter(uri)
+    if not connection:
+        raise ValueError(f"adapter name={adapter_name} is invalid.")
+    return connection
+
+
 class Connections:
     def __init__(self) -> None:
         self.connections: dict[str, dict[str, DBAdapter]] = defaultdict(dict)
@@ -79,13 +93,7 @@ class Connections:
             )
             return first_con
 
-        connection = None
-        if first_con.adapter_name == "sqllite":
-            connection = SqliteAdapter(first_con.uri)
-        elif first_con.adapter_name == "duckdb":
-            connection = DuckdbAdapter(first_con.uri)
-        if not connection:
-            raise ValueError(f"connection_name={connection_name} is invalid.")
+        connection = create_adapter_connection(first_con.adapter_name, first_con.uri)
         self.connections[hash_uri][connection_name] = connection
         return connection
 
@@ -108,16 +116,14 @@ class Connections:
             return self._create_new_connection(hash_uri, inline_connection_name)
         saved_connections = get_connections()
         for con in saved_connections:
-            conParam = ConnectionParam.model_validate(
+            connection_param = ConnectionParam.model_validate(
                 {"name": inline_connection_name, **con.model_dump(mode="json")}
             )
-            con_hash_uri, _ = self._get_hash_connection_name(conParam.get_id())
+            con_hash_uri, _ = self._get_hash_connection_name(connection_param.get_id())
             if con_hash_uri == hash_uri:
-                connection = None
-                if conParam.adapter == "sqlite":
-                    connection = SqliteAdapter(conParam.uri)
-                elif conParam.adapter == "duckdb":
-                    connection = DuckdbAdapter(conParam.uri)
+                connection = create_adapter_connection(
+                    connection_param.adapter, connection_param.uri
+                )
                 if connection:
                     logger.debug(
                         f"Creating a new connection from a saved connection: {inline_connection_name}"
@@ -130,10 +136,9 @@ class Connections:
             return False
         connection_id = params.get_id()
         hash_uri, connection_name = self._get_hash_connection_name(connection_id)
-        if params.adapter == "sqlite":
-            self.connections[hash_uri][connection_name] = SqliteAdapter(params.uri)
-        elif params.adapter == "duckdb":
-            self.connections[hash_uri][connection_name] = DuckdbAdapter(params.uri)
+        self.connections[hash_uri][connection_name] = create_adapter_connection(
+            params.adapter, params.uri
+        )
         return True
 
 

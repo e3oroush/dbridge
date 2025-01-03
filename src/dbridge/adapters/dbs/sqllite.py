@@ -8,7 +8,7 @@ from dbridge.adapters.interfaces import DBAdapter
 
 class SqliteAdapter(DBAdapter):
     def __init__(self, uri: str) -> None:
-        self.uri = uri
+        super().__init__(uri)
         self.adapter_name = "sqlite"
         self.con: Connection | None = None
         self._connect()
@@ -26,14 +26,6 @@ class SqliteAdapter(DBAdapter):
 
     def _flatten(self, result: list[tuple[str]]) -> list[str]:
         return [t[0] for t in result]
-
-    @property
-    def uri(self) -> str:
-        return self._uri
-
-    @uri.setter
-    def uri(self, value: str):
-        self._uri = value
 
     def is_single_connection(self) -> bool:
         return True

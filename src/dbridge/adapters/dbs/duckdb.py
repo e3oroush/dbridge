@@ -4,17 +4,15 @@ import duckdb
 from duckdb import DuckDBPyConnection
 
 from dbridge.adapters.interfaces import DBAdapter
-from dbridge.logging import get_logger
 
 from .models import DbCatalog
 
 
 class DuckdbAdapter(DBAdapter):
     def __init__(self, uri: str) -> None:
-        self.uri = uri
+        super().__init__(uri)
         self.adapter_name = "duckdb"
         self.con: DuckDBPyConnection | None = None
-        self.logger = get_logger()
         self._connect()
 
     def _db_exisit(self) -> bool:
@@ -40,14 +38,6 @@ class DuckdbAdapter(DBAdapter):
 
     def _flatten(self, result: list[tuple[str]]) -> list[str]:
         return [t[0] for t in result]
-
-    @property
-    def uri(self) -> str:
-        return self._uri
-
-    @uri.setter
-    def uri(self, value: str):
-        self._uri = value
 
     def is_single_connection(self) -> bool:
         return True

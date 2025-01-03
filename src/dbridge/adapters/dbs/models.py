@@ -9,3 +9,6 @@ class SchemaCatalog(BaseModel):
 class DbCatalog(BaseModel):
     name: str
     schemas: list[SchemaCatalog]
+
+
+INSTALLED_ADAPTERS = ["sqlite", "duckdb"]

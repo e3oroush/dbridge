@@ -28,7 +28,12 @@ dependencies = [
   "pandas==2.2.3",
   "duckdb==1.1.3",
   "pyyaml==6.0.2",
+  "sqlalchemy",
 ]
+
+[project.optional-dependencies]
+mysql = ["pymysql"]
+postgres = ["psycopg2"]
 
 [project.urls]
 Documentation = "https://github.com/e3oroush/dbridge#readme"
@@ -44,7 +49,15 @@ extra-dependencies = ["mypy>=1.0.0"]
 check = "mypy --install-types --non-interactive {args:src/dbridge tests}"
 
 [tool.hatch.envs.dev]
-dependencies = ["ruff", "black", "isort", "pyright", "pytest", "ipython"]
+dependencies = [
+  "ruff",
+  "black",
+  "isort",
+  "pyright",
+  "pytest",
+  "ipython",
+  "pymysql",
+]
 
 [tool.hatch.envs.test]
 dependencies = ["coverage[toml]", "pytest", "pytest-cov", "pytest-mock"]
