@@ -42,13 +42,7 @@ class DuckdbAdapter(DBAdapter):
     def is_single_connection(self) -> bool:
         return True
 
-    def show_tables(self) -> list[str]:
-        # Returns a list of tuples
-        query = "select table_name from information_schema.tables;"
-        result = self._execute_query(query).fetchall()
-        return self._flatten(result)
-
-    def show_columns(self, table_name: str) -> list[str]:
+    def show_columns(self, table_name: str, *args, **kwargs) -> list[str]:
         # Returns a list of tuples
         # TODO: change this to use information_schema.columns table instead
         query = "select column_name from information_schema.columns where table_name=?;"

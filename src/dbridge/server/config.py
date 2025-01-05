@@ -11,6 +11,7 @@ from pydantic_settings import BaseSettings
 from dbridge.adapters.dbs import DuckdbAdapter, SqliteAdapter
 from dbridge.adapters.dbs.mysql import MySqlAdapter
 from dbridge.adapters.dbs.postgres import PostgresAdapter
+from dbridge.adapters.dbs.snowflake import SnowflakeAdapter
 from dbridge.adapters.interfaces import DBAdapter
 from dbridge.logging import get_logger
 
@@ -27,6 +28,7 @@ def get_config_directory() -> Path:
 class ConnectionConfig(BaseModel):
     adapter: str
     uri: str
+    connection_config: dict[str, str] | None = None
 
     def __eq__(self, other) -> bool:
         if isinstance(other, ConnectionConfig):
@@ -61,16 +63,20 @@ class QueryParam(BaseModel):
     connection_name: str = "default"
 
 
-def create_adapter_connection(adapter_name: str, uri: str) -> DBAdapter:
+def create_adapter_connection(
+    adapter_name: str, uri: str, config: dict[str, str] | None = None
+) -> DBAdapter:
     connection = None
     if adapter_name == "sqlite":
         connection = SqliteAdapter(uri)
     elif adapter_name == "duckdb":
         connection = DuckdbAdapter(uri)
     elif adapter_name == "mysql":
-        connection = MySqlAdapter(uri)
+        connection = MySqlAdapter(uri, config)
     elif adapter_name == "postgres":
-        connection = PostgresAdapter(uri)
+        connection = PostgresAdapter(uri, config)
+    elif adapter_name == "snowflake":
+        connection = SnowflakeAdapter(uri, config)
     if not connection:
         raise ValueError(f"adapter name={adapter_name} is invalid.")
     return connection
@@ -96,7 +102,9 @@ class Connections:
             )
             return first_con
 
-        connection = create_adapter_connection(first_con.adapter_name, first_con.uri)
+        connection = create_adapter_connection(
+            first_con.adapter_name, first_con.uri, first_con.config
+        )
         self.connections[hash_uri][connection_name] = connection
         return connection
 
@@ -125,7 +133,9 @@ class Connections:
             con_hash_uri, _ = self._get_hash_connection_name(connection_param.get_id())
             if con_hash_uri == hash_uri:
                 connection = create_adapter_connection(
-                    connection_param.adapter, connection_param.uri
+                    connection_param.adapter,
+                    connection_param.uri,
+                    connection_param.connection_config,
                 )
                 if connection:
                     logger.debug(
@@ -140,7 +150,7 @@ class Connections:
         connection_id = params.get_id()
         hash_uri, connection_name = self._get_hash_connection_name(connection_id)
         self.connections[hash_uri][connection_name] = create_adapter_connection(
-            params.adapter, params.uri
+            params.adapter, params.uri, params.connection_config
         )
         return True
 

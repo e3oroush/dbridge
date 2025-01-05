@@ -1,14 +1,14 @@
-from typing import Any
+from operator import mul
 
 import pandas as pd
-from sqlalchemy import Engine, create_engine
 
+from dbridge.adapters.capabilities import CapabilityEnums
 from dbridge.adapters.interfaces import DBAdapter
 
 from .models import INSTALLED_ADAPTERS, DbCatalog
 
 try:
-    import pymysql
+    import mysql.connector
 
     INSTALLED_ADAPTERS.append("mysql")
 except ImportError:
@@ -16,13 +16,19 @@ except ImportError:
 
 
 class MySqlAdapter(DBAdapter):
-    def __init__(self, uri: str) -> None:
+    def __init__(self, uri: str, config: dict[str, str] | None) -> None:
         super().__init__(uri)
         self.adapter_name = "mysql"
-        self.db_connection: Engine = create_engine(uri)
+        self.config = config
+        if not config:
+            config = {}
+        self.connection = mysql.connector.connect(**config)
 
     def is_single_connection(self) -> bool:
         return False
+
+    def get_capabilities(self) -> list[CapabilityEnums]:
+        return [CapabilityEnums.USE_DB]
 
     def show_dbs(self) -> list[str]:
         query = (
@@ -36,12 +42,12 @@ class MySqlAdapter(DBAdapter):
             not in ["information_schema", "mysql", "performance_schema", "sys"]
         ]
 
-    def show_tables(self) -> list[str]:
+    def show_tables(self, *args, **kwargs) -> list[str]:
         query = 'SELECT TABLE_NAME as tbl FROM information_schema.tables where TABLE_SCHEMA not in ("sys", "mysql", "inforrmation_schema", "performance_schema")'
         tables = self.run_query(query, 500)
         return [d["tbl"] for d in tables]
 
-    def show_columns(self, table_name: str) -> list[str]:
+    def show_columns(self, table_name: str, *args, **kwargs) -> list[str]:
         query = f'SELECT COLUMN_NAME as col FROM information_schema.columns where TABLE_NAME="{table_name}"'
         columns = self.run_query(query)
         return [d["col"] for d in columns]
@@ -75,5 +81,10 @@ class MySqlAdapter(DBAdapter):
         return [DbCatalog.model_validate(r) for r in result]
 
     def run_query(self, query: str, limit=100) -> list[dict]:
-        df = next(pd.read_sql(query, con=self.db_connection, chunksize=limit))
-        return df.to_dict("records")
+        with self.connection.cursor(buffered=True) as cursor:
+            results = cursor.execute(query, multi=True)
+        data = []
+        for rows in results:
+            if rows.with_rows:
+                data = rows.fetchmany(limit)
+        return self._get_dict_items(data, [desc[0] for desc in rows.description])

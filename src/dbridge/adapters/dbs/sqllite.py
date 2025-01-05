@@ -38,7 +38,7 @@ class SqliteAdapter(DBAdapter):
         ).fetchall()
         return self._flatten(result)
 
-    def show_columns(self, table_name: str) -> list[str]:
+    def show_columns(self, table_name: str, *args, **kwargs) -> list[str]:
         cur = self._get_cursor()
         # Returns a list of tuples
         result = cur.execute(

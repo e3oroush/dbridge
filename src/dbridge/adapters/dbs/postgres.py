@@ -1,8 +1,6 @@
-from typing import Any
-
 import pandas as pd
-from sqlalchemy import Engine, create_engine
 
+from dbridge.adapters.capabilities import CapabilityEnums
 from dbridge.adapters.interfaces import DBAdapter
 
 from .models import INSTALLED_ADAPTERS, DbCatalog
@@ -16,27 +14,21 @@ except ImportError:
 
 
 class PostgresAdapter(DBAdapter):
-    def __init__(self, uri: str) -> None:
+    def __init__(self, uri: str, config: dict[str, str] | None = None) -> None:
         super().__init__(uri)
+        self.config = config
+        if not self.config:
+            self.config = {}
         self.adapter_name = "postgres"
-        self.db_connection: Engine = create_engine(uri)
+        self.connection = psycopg2.connect(**self.config)
 
     def is_single_connection(self) -> bool:
         return False
 
-    def show_dbs(self) -> list[str]:
-        query = (
-            "select distinct table_catalog as database from information_schema.tables"
-        )
-        dbs = self.run_query(query)
-        return [d["database"] for d in dbs]
+    def get_capabilities(self) -> list[CapabilityEnums]:
+        return [CapabilityEnums.USE_DB, CapabilityEnums.USE_SCHEMA]
 
-    def show_tables(self) -> list[str]:
-        query = "SELECT TABLE_NAME as tbl FROM information_schema.tables"
-        tables = self.run_query(query, 500)
-        return [d["tbl"] for d in tables]
-
-    def show_columns(self, table_name: str) -> list[str]:
+    def show_columns(self, table_name: str, *args, **kwargs) -> list[str]:
         query = f"SELECT COLUMN_NAME as col FROM information_schema.columns where TABLE_NAME='{table_name}'"
         columns = self.run_query(query)
         return [d["col"] for d in columns]
@@ -70,5 +62,7 @@ class PostgresAdapter(DBAdapter):
         return [DbCatalog.model_validate(r) for r in result]
 
     def run_query(self, query: str, limit=100) -> list[dict]:
-        df = next(pd.read_sql(query, con=self.db_connection, chunksize=limit))
-        return df.to_dict("records")
+        with self.connection.cursor() as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchmany(limit)
+            return self._get_dict_items(rows, [d.name for d in cursor.description])

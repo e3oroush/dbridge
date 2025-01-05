@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 
+from dbridge.adapters.capabilities import CapabilityEnums
 from dbridge.adapters.dbs.models import INSTALLED_ADAPTERS, DbCatalog
 from dbridge.logging import get_logger
 
@@ -39,22 +40,32 @@ def create_connection(params: ConnectionParam) -> ConnectionConfigApi:
     return ConnectionConfigApi(name=params.name, connection_id=params.get_id())
 
 
-@app.get("/get_tables")
-def get_tables(connection_id: str) -> list[str]:
-    assert (con := connections.get_connection(connection_id))
-    return con.show_tables()
-
-
 @app.get("/get_columns")
-def get_columns(connection_id: str, table_name) -> list[str]:
+def get_columns(
+    connection_id: str,
+    table_name: str,
+    dbname: str | None = None,
+    schema_name: str | None = None,
+) -> list[str]:
     assert (con := connections.get_connection(connection_id))
-    return con.show_columns(table_name)
+    return con.show_columns(table_name, dbname=dbname, schema_name=schema_name)
 
 
 @app.get("/query_table")
-def query_table(connection_id: str, table_name) -> list[dict]:
+def query_table(
+    connection_id: str,
+    table_name: str,
+    dbname: str | None = None,
+    schema_name: str | None = None,
+) -> list[dict]:
     assert (con := connections.get_connection(connection_id))
-    query = f"select * from {table_name};"
+    entity = table_name
+    capabilities = con.get_capabilities()
+    if CapabilityEnums.USE_SCHEMA in capabilities:
+        entity = f"{schema_name}.{entity}"
+    if CapabilityEnums.USE_DB in capabilities:
+        entity = f"{dbname}.{entity}"
+    query = f"select * from {entity};"
     return con.run_query(query)
 
 
