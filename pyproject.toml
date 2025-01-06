@@ -33,7 +33,7 @@ dependencies = [
 [project.optional-dependencies]
 mysql = ["pymysql"]
 postgres = ["psycopg2"]
-snowflake = ["snowflake-connector-python[pandas]"]
+snowflake = ["snowflake-connector-python"]
 
 [project.urls]
 Documentation = "https://github.com/e3oroush/dbridge#readme"

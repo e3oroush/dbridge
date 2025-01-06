@@ -2,7 +2,6 @@ import hashlib
 import os
 from collections import defaultdict
 from pathlib import Path
-from typing import Literal
 
 import yaml
 from pydantic import BaseModel, Field
@@ -32,7 +31,11 @@ class ConnectionConfig(BaseModel):
 
     def __eq__(self, other) -> bool:
         if isinstance(other, ConnectionConfig):
-            return self.adapter == other.adapter and self.uri == other.uri
+            return (
+                self.adapter == other.adapter
+                and self.uri == other.uri
+                and self.connection_config == other.connection_config
+            )
         return False
 
 
@@ -44,6 +47,7 @@ class ConnectionParam(ConnectionConfig):
             return (
                 self.adapter == other.adapter
                 and self.uri == other.uri
+                and self.connection_config == other.connection_config
                 and self.name == other.name
             )
         return False
@@ -156,7 +160,6 @@ class Connections:
 
 
 class ServiceConfig(BaseSettings):
-    # TODO: add a proper os based config location
     data_path: Path = Field(Path(get_config_directory() / "dbridge"))
     connection_list_fname: str = "connections_list.yml"
 

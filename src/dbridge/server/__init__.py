@@ -32,7 +32,7 @@ def get_saved_connections() -> list[ConnectionConfig]:
 
 @app.post("/connections")
 def create_connection(params: ConnectionParam) -> ConnectionConfigApi:
-    add_connection(params)
+    add_connection(ConnectionConfig.model_validate(params.model_dump(mode="json")))
     if connections.set_connection(params):
         logger.debug(f"Creating a new connection for {params.name}")
     else:

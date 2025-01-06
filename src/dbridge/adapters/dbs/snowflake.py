@@ -1,5 +1,6 @@
 import pandas as pd
 
+from dbridge.adapters.capabilities import CapabilityEnums
 from dbridge.adapters.interfaces import DBAdapter
 
 from .models import INSTALLED_ADAPTERS, DbCatalog
@@ -28,6 +29,9 @@ class SnowflakeAdapter(DBAdapter):
 
     def is_single_connection(self) -> bool:
         return False
+
+    def get_capabilities(self) -> list[CapabilityEnums]:
+        return [CapabilityEnums.USE_DB, CapabilityEnums.USE_SCHEMA]
 
     def _fetch_rows_value_key(self, rows, name: str) -> list[str]:
         ind = 0
@@ -86,6 +90,7 @@ class SnowflakeAdapter(DBAdapter):
         return [DbCatalog.model_validate(r) for r in result]
 
     def run_query(self, query: str, limit=100) -> list[dict]:
+        self.logger.info(f"Running query:\n{query}")
         for cur in self.connection.execute_string(query):
             data = cur.fetchmany(limit)
         return self._get_dict_items(data, [desc.name for desc in cur.description])
