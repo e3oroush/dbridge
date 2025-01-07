@@ -83,8 +83,8 @@ class MySqlAdapter(DBAdapter):
     def run_query(self, query: str, limit=100) -> list[dict]:
         with self.connection.cursor(buffered=True) as cursor:
             results = cursor.execute(query, multi=True)
-        data = []
-        for rows in results:
-            if rows.with_rows:
-                data = rows.fetchmany(limit)
-        return self._get_dict_items(data, [desc[0] for desc in rows.description])
+            data = []
+            for rows in results:
+                if rows.with_rows:
+                    data = rows.fetchmany(limit)
+            return self._get_dict_items(data, [desc[0] for desc in rows.description])

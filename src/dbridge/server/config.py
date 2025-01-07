@@ -93,7 +93,7 @@ class Connections:
     def _get_hash_connection_name(self, connection_id: str) -> tuple[str, str]:
         # NOTE: connection_id is the md5_hash_uri--connection_name
         split = connection_id.split("--")
-        assert len(split) == 2
+        assert len(split) == 2, f"{connection_id} is not well formed connection id"
         hash_uri, connection_name = split[0], split[1]
         return hash_uri, connection_name
 
