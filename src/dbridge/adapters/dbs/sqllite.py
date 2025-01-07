@@ -7,10 +7,12 @@ from dbridge.adapters.interfaces import DBAdapter
 
 
 class SqliteAdapter(DBAdapter):
-    def __init__(self, uri: str) -> None:
-        super().__init__(uri)
+    def __init__(self, config: dict[str, str]) -> None:
+        super().__init__(config)
+        assert self.config["uri"], "You should provide uri config for sqlite adapter"
         self.adapter_name = "sqlite"
         self.con: Connection | None = None
+        self.uri = self.config["uri"]
         self._connect()
 
     def _db_exisit(self) -> bool:

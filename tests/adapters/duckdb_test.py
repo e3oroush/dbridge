@@ -1,9 +1,10 @@
-from dbridge.adapters.dbs.duckdb import DuckdbAdapter
 import pytest
+
+from dbridge.adapters.dbs.duckdb import DuckdbAdapter
 
 
 def init_db():
-    db = DuckdbAdapter(":memory:")
+    db = DuckdbAdapter({"uri": ":memory:"})
     queries = [
         """CREATE TABLE contacts (
 	contact_id INTEGER PRIMARY KEY,
@@ -33,7 +34,8 @@ def init_db():
 
 def test_show_tables():
     queries, sqlite = init_db()
-    tables = sqlite.show_tables()
+    catalog = sqlite.show_tables_schema_dbs()
+    tables = catalog[0].schemas[0].tables
     assert len(tables) == len(queries)
     assert "contacts" in tables
     assert "groups" in tables

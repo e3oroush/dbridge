@@ -16,13 +16,10 @@ except ImportError:
 
 
 class MySqlAdapter(DBAdapter):
-    def __init__(self, uri: str, config: dict[str, str] | None) -> None:
-        super().__init__(uri)
+    def __init__(self, config: dict[str, str]) -> None:
+        super().__init__(config)
         self.adapter_name = "mysql"
-        self.config = config
-        if not config:
-            config = {}
-        self.connection = mysql.connector.connect(**config)
+        self.connection = mysql.connector.connect(**self.config)
 
     def is_single_connection(self) -> bool:
         return False

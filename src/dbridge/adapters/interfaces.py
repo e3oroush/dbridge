@@ -8,11 +8,10 @@ from .dbs.models import DbCatalog
 
 class DBAdapter(ABC):
     adapter_name: str
-    config: dict[str, str] | None = None
 
-    def __init__(self, uri: str) -> None:
-        self.uri = uri
+    def __init__(self, config: dict[str, str]) -> None:
         self.logger = get_logger()
+        self.config = config
 
     def get_capabilities(self) -> list[CapabilityEnums]:
         return []
@@ -35,9 +34,9 @@ class DBAdapter(ABC):
     def is_single_connection(self) -> bool: ...
 
     @property
-    def uri(self) -> str:
-        return self._uri
+    def config(self) -> dict[str, str]:
+        return self._config
 
-    @uri.setter
-    def uri(self, value: str):
-        self._uri = value
+    @config.setter
+    def config(self, value: dict[str, str]):
+        self._config = value

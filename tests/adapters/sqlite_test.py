@@ -1,9 +1,10 @@
-from dbridge.adapters.dbs.sqllite import SqliteAdapter
 import pytest
+
+from dbridge.adapters.dbs.sqllite import SqliteAdapter
 
 
 def init_db():
-    sqlite = SqliteAdapter(":memory:")
+    sqlite = SqliteAdapter({"uri": ":memory:"})
     cur = sqlite.con.cursor()
     queries = [
         """CREATE TABLE contacts (
@@ -38,7 +39,8 @@ def init_db():
 
 def test_show_tables():
     queries, sqlite = init_db()
-    tables = sqlite.show_tables()
+    catalog = sqlite.show_tables_schema_dbs()
+    tables = catalog[0].schemas[0].tables
     assert len(tables) == len(queries)
     assert "contacts" in tables
     assert "groups" in tables

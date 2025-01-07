@@ -14,11 +14,8 @@ except ImportError:
 
 
 class PostgresAdapter(DBAdapter):
-    def __init__(self, uri: str, config: dict[str, str] | None = None) -> None:
-        super().__init__(uri)
-        self.config = config
-        if not self.config:
-            self.config = {}
+    def __init__(self, config: dict[str, str]) -> None:
+        super().__init__(config)
         self.adapter_name = "postgres"
         self.connection = psycopg2.connect(**self.config)
 

@@ -16,16 +16,15 @@ except ImportError:
 
 
 class SnowflakeAdapter(DBAdapter):
-    def __init__(self, uri: str, config: dict[str, str] | None) -> None:
-        super().__init__(uri)
+    def __init__(self, config: dict[str, str]) -> None:
+        super().__init__(config)
         assert (
             snowflake.connector and SnowflakeConnection
         ), "You should `pip install snowflake.connection` to be able to use this module"
         self.adapter_name = "snowflake"
-        if not config:
-            config = {}
-        self.config = config
-        self.connection: SnowflakeConnection = snowflake.connector.connect(**config)
+        self.connection: SnowflakeConnection = snowflake.connector.connect(
+            **self.config
+        )
 
     def is_single_connection(self) -> bool:
         return False

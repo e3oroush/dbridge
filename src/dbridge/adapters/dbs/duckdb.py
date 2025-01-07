@@ -9,10 +9,12 @@ from .models import DbCatalog
 
 
 class DuckdbAdapter(DBAdapter):
-    def __init__(self, uri: str) -> None:
-        super().__init__(uri)
+    def __init__(self, config: dict[str, str]) -> None:
+        super().__init__(config)
+        assert self.config["uri"], "You should provide uri for duckdb adapter"
         self.adapter_name = "duckdb"
         self.con: DuckDBPyConnection | None = None
+        self.uri = self.config["uri"]
         self._connect()
 
     def _db_exisit(self) -> bool:

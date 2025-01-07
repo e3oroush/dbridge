@@ -26,14 +26,12 @@ def get_config_directory() -> Path:
 
 class ConnectionConfig(BaseModel):
     adapter: str
-    uri: str
-    connection_config: dict[str, str] | None = None
+    connection_config: dict[str, str] = {}
 
     def __eq__(self, other) -> bool:
         if isinstance(other, ConnectionConfig):
             return (
                 self.adapter == other.adapter
-                and self.uri == other.uri
                 and self.connection_config == other.connection_config
             )
         return False
@@ -46,14 +44,18 @@ class ConnectionParam(ConnectionConfig):
         if isinstance(other, ConnectionParam):
             return (
                 self.adapter == other.adapter
-                and self.uri == other.uri
                 and self.connection_config == other.connection_config
                 and self.name == other.name
             )
         return False
 
     def get_id(self) -> str:
-        return hashlib.md5(self.uri.encode()).hexdigest() + f"--{self.name}"
+        return (
+            hashlib.md5(
+                (f"{self.adapter}-{self.connection_config}").encode()
+            ).hexdigest()
+            + f"--{self.name}"
+        )
 
 
 class ConnectionConfigApi(BaseModel):
@@ -67,20 +69,18 @@ class QueryParam(BaseModel):
     connection_name: str = "default"
 
 
-def create_adapter_connection(
-    adapter_name: str, uri: str, config: dict[str, str] | None = None
-) -> DBAdapter:
+def create_adapter_connection(adapter_name: str, config: dict[str, str]) -> DBAdapter:
     connection = None
     if adapter_name == "sqlite":
-        connection = SqliteAdapter(uri)
+        connection = SqliteAdapter(config)
     elif adapter_name == "duckdb":
-        connection = DuckdbAdapter(uri)
+        connection = DuckdbAdapter(config)
     elif adapter_name == "mysql":
-        connection = MySqlAdapter(uri, config)
+        connection = MySqlAdapter(config)
     elif adapter_name == "postgres":
-        connection = PostgresAdapter(uri, config)
+        connection = PostgresAdapter(config)
     elif adapter_name == "snowflake":
-        connection = SnowflakeAdapter(uri, config)
+        connection = SnowflakeAdapter(config)
     if not connection:
         raise ValueError(f"adapter name={adapter_name} is invalid.")
     return connection
@@ -138,7 +138,6 @@ class Connections:
             if con_hash_uri == hash_uri:
                 connection = create_adapter_connection(
                     connection_param.adapter,
-                    connection_param.uri,
                     connection_param.connection_config,
                 )
                 if connection:
@@ -154,7 +153,7 @@ class Connections:
         connection_id = params.get_id()
         hash_uri, connection_name = self._get_hash_connection_name(connection_id)
         self.connections[hash_uri][connection_name] = create_adapter_connection(
-            params.adapter, params.uri, params.connection_config
+            params.adapter, params.connection_config
         )
         return True
 
