@@ -106,9 +106,7 @@ class Connections:
             )
             return first_con
 
-        connection = create_adapter_connection(
-            first_con.adapter_name, first_con.uri, first_con.config
-        )
+        connection = create_adapter_connection(first_con.adapter_name, first_con.config)
         self.connections[hash_uri][connection_name] = connection
         return connection
 

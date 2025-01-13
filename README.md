@@ -8,7 +8,9 @@
 
 A unified database management server that acts as a bridge between client applications and various database engines, providing a consistent interface for database operations and schema exploration.
 
-This project is a server application that is intended to be used joined with a UI client that can seemlessly create different database connections to play around with.
+This project is a server application that tries to serve all the requriments for any UI applications similar to [dbeaver](https://dbeaver.io/) that can be as a UI database client.
+
+## Table of Contents
 
 ## Table of Contents
 
@@ -51,7 +53,8 @@ pythom -m dbridge.server.app
 
 Here is a list of UI clients that are using this server to provide a dbridge user interface.
 
-- [dbridge.nvim]() a neovim plugin
+- [dbridge.nvim](https://github.com/e3oroush/dbridge.nvim) a neovim plugin
+- [dbridge.tui](https://github.com/e3oroush/dbridge.nvim) a terminal user interface developed with [Textual](https://textual.textualize.io/)
 
 ## License
 
