@@ -30,11 +30,11 @@ class DuckdbAdapter(DBAdapter):
     def _execute_query(
         self, query: str, parameters: object = None
     ) -> DuckDBPyConnection:
-        con = self._get_cursor()
+        con = self._get_con()
         self.logger.debug(f"Runnig query: {query}")
         return con.execute(query, parameters)
 
-    def _get_cursor(self) -> DuckDBPyConnection:
+    def _get_con(self) -> DuckDBPyConnection:
         assert self.con is not None, "connection shouldn't be None"
         return self.con
 
@@ -46,7 +46,6 @@ class DuckdbAdapter(DBAdapter):
 
     def show_columns(self, table_name: str, *args, **kwargs) -> list[str]:
         # Returns a list of tuples
-        # TODO: change this to use information_schema.columns table instead
         query = "select column_name from information_schema.columns where table_name=?;"
         result = self._execute_query(query, (table_name,)).fetchall()
         return self._flatten(result)
@@ -88,4 +87,11 @@ class DuckdbAdapter(DBAdapter):
         return [DbCatalog.model_validate(r) for r in result]
 
     def run_query(self, query: str, limit=100) -> list[dict]:
+        """
+        Run a SQL query and return the result of last statement as a list of dictionaries.
+
+        :param query: The SQL query to be executed.
+        :param limit: Number of rows to retrieve from the query result. Default is 100.
+        :returns: A list of dictionaries representing the rows fetched from the database.
+        """
         return self._execute_query(query).fetch_df_chunk(limit).to_dict("records")
