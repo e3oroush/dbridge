@@ -30,6 +30,10 @@ pip install dbridge
 pythom -m dbridge.server.app
 ```
 
+## DB Connection
+
+A Database connection accepts a custom connection config which depending on the db driver, you are flexible to use any form of config.
+
 ## Features
 
 - Supported DBs:
