@@ -1,3 +1,4 @@
+import re
 import sys
 
 import sqlparse
@@ -7,7 +8,9 @@ from sqlparse.tokens import Keyword
 
 def extract_select_statement(query: str) -> str | None:
     """Split multiple statements and return the first select statement"""
-    statements = sqlparse.split(query, strip_semicolon=True)
+    statements = sqlparse.split(
+        re.sub(r",\s+from", " from", query.lower()), strip_semicolon=True
+    )
     for statement in statements:
         if "select" in statement.lower():
             return statement
