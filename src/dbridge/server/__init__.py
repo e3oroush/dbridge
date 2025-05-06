@@ -1,3 +1,7 @@
+import hashlib
+from datetime import datetime
+from typing import Callable
+
 from fastapi import FastAPI
 
 from dbridge.adapters.capabilities import CapabilityEnums
@@ -14,10 +18,38 @@ from .config import (
     get_connections,
 )
 
+
+def hash_arg(args: list[str | None]) -> str:
+    return hashlib.sha256(
+        "".join([a for a in args if a is not None]).encode()
+    ).hexdigest()
+
+
+EXPRATION_SECONDS = 120
+
+
+def is_expired(dt: datetime):
+    now = datetime.now()
+    if (now - dt).total_seconds() > EXPRATION_SECONDS:
+        return True
+    return False
+
+
+def cache_value(v: Callable, args: list[str | None]):
+    now = datetime.now()
+    key = hash_arg(args)
+    if not (value := cache.get(key)) or is_expired(value[1]):
+        value = (v(), now)
+        cache[key] = value
+    return value[0]
+
+
 app = FastAPI()
 logger = get_logger()
 
 connections = Connections()
+# TODO: add a cach with TTL
+cache = {}
 
 
 @app.get("/adapters")
@@ -48,7 +80,10 @@ def get_columns(
     schema_name: str | None = None,
 ) -> list[str]:
     assert (con := connections.get_connection(connection_id))
-    return con.show_columns(table_name, dbname=dbname, schema_name=schema_name)
+    return cache_value(
+        lambda: con.show_columns(table_name, dbname=dbname, schema_name=schema_name),
+        ["get_columns", connection_id, table_name, dbname, schema_name],
+    )
 
 
 @app.get("/query_table")
@@ -66,13 +101,18 @@ def query_table(
     if CapabilityEnums.USE_DB in capabilities:
         entity = f"{dbname}.{entity}"
     query = f"select * from {entity};"
-    return con.run_query(query)
+    return cache_value(
+        lambda: con.run_query(query),
+        ["query_table", connection_id, table_name, dbname, schema_name, query],
+    )
 
 
 @app.get("/get_dbs_schemas_tables")
 def get_all(connection_id: str) -> list[DbCatalog]:
     assert (con := connections.get_connection(connection_id))
-    return con.show_tables_schema_dbs()
+    return cache_value(
+        lambda: con.show_tables_schema_dbs(), ["get_dbs_schemas_tables", connection_id]
+    )
 
 
 @app.post("/run_query")
