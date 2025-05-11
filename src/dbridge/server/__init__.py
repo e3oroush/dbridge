@@ -1,6 +1,4 @@
 import hashlib
-from datetime import datetime
-from typing import Callable
 
 from fastapi import FastAPI
 
