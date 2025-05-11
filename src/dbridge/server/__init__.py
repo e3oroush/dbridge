@@ -8,6 +8,7 @@ from dbridge.adapters.capabilities import CapabilityEnums
 from dbridge.adapters.dbs.models import INSTALLED_ADAPTERS, DbCatalog
 from dbridge.logging import get_logger
 
+from .caching import cache_value
 from .config import (
     ConnectionConfig,
     ConnectionConfigApi,
@@ -18,37 +19,10 @@ from .config import (
     get_connections,
 )
 
-
-def hash_arg(args: list[str | None]) -> str:
-    return hashlib.sha256(
-        "".join([a for a in args if a is not None]).encode()
-    ).hexdigest()
-
-
-EXPRATION_SECONDS = 120
-
-
-def is_expired(dt: datetime):
-    now = datetime.now()
-    if (now - dt).total_seconds() > EXPRATION_SECONDS:
-        return True
-    return False
-
-
-def cache_value(v: Callable, args: list[str | None]):
-    now = datetime.now()
-    key = hash_arg(args)
-    if not (value := cache.get(key)) or is_expired(value[1]):
-        value = (v(), now)
-        cache[key] = value
-    return value[0]
-
-
 app = FastAPI()
 logger = get_logger()
 
 connections = Connections()
-# TODO: add a cach with TTL
 cache = {}
 
 
