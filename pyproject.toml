@@ -28,6 +28,7 @@ dependencies = [
   "pandas==2.2.3",
   "duckdb==1.1.3",
   "pyyaml==6.0.2",
+  "sqlparse==0.5.3",
 ]
 
 [project.optional-dependencies]
@@ -79,3 +80,4 @@ tests = ["tests", "*/dbridge/tests"]
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 [tool.hatch.envs.default.scripts]
 start_server = "python -m dbridge.server.app"
+extract_table = "python -m dbridge.scripts.extract_table"
