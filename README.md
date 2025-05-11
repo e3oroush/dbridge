@@ -50,7 +50,7 @@ A Database connection accepts a custom connection config which depending on the 
 
 ## TODOs
 
-- [ ] Autocomplete and suggestion
+- [x] Autocomplete and suggestion
 - [ ] Edit tables and schemas
 
 ## UIs
