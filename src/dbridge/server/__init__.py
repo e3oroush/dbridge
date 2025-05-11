@@ -1,5 +1,3 @@
-import hashlib
-
 from fastapi import FastAPI
 
 from dbridge.adapters.capabilities import CapabilityEnums
@@ -21,7 +19,6 @@ app = FastAPI()
 logger = get_logger()
 
 connections = Connections()
-cache = {}
 
 
 @app.get("/adapters")
