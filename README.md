@@ -1,6 +1,6 @@
 # dbridge
 
-[![actions status](https://img.shields.io/github/actions/workflow/status/e3oroush/dbridge/publish-pypi.yml?branch=main&logo=github&style=)](https://github.com/e3oroush/dbridge/actions)
+[![actions status](https://img.shields.io/github/actions/workflow/status/e3oroush/dbridge/publish-pypi.yml?ref=tags/*&logo=github&style=)](https://github.com/e3oroush/dbridge/actions)
 [![PyPI - Version](https://img.shields.io/pypi/v/dbridge.svg)](https://pypi.org/project/dbridge)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dbridge.svg)](https://pypi.org/project/dbridge)
 
