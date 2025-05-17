@@ -25,6 +25,9 @@ class DBAdapter(ABC):
     ) -> list[str]: ...
 
     @abstractmethod
+    def get_all_columns(self, dbname: str | None, **args) -> list[str]: ...
+
+    @abstractmethod
     def show_tables_schema_dbs(self) -> list[DbCatalog]: ...
 
     @abstractmethod

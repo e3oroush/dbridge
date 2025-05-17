@@ -4,6 +4,7 @@ import duckdb
 from duckdb import DuckDBPyConnection
 
 from dbridge.adapters.interfaces import DBAdapter
+from dbridge.config import NO_COLS_FETCH
 
 from .models import DbCatalog
 
@@ -49,6 +50,15 @@ class DuckdbAdapter(DBAdapter):
         query = "select column_name from information_schema.columns where table_name=?;"
         result = self._execute_query(query, (table_name,)).fetchall()
         return self._flatten(result)
+
+    def get_all_columns(self, dbname: str | None = None, **kwargs) -> list[str]:
+        # Returns a list of tuples
+        query = f"select column_name, table_name from information_schema.columns limit {NO_COLS_FETCH};"
+        result = self._execute_query(query).fetchall()
+        assert len(result) > 0 and len(result[0]) > 0 and len(result[0][0]) > 1
+        table_name = result[0][0][1]
+        cols = self._flatten(result)
+        return [f"{table_name}.{col}" for col in cols]
 
     def show_tables_schema_dbs(self) -> list[DbCatalog]:
         """Returns a list of `DbCatalog` objects containing databases with their schemas and tables.

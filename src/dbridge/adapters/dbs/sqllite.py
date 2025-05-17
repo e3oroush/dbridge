@@ -48,6 +48,13 @@ class SqliteAdapter(DBAdapter):
         ).fetchall()
         return self._flatten(result)
 
+    def get_all_columns(self, **args) -> list[str]:
+        tables = self.show_tables()
+        columns = []
+        for tbl in tables:
+            columns.extend(self.show_columns(tbl))
+        return columns
+
     def show_tables_schema_dbs(self) -> list[DbCatalog]:
         return [
             DbCatalog(

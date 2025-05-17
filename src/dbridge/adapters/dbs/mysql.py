@@ -49,6 +49,11 @@ class MySqlAdapter(DBAdapter):
         columns = self.run_query(query)
         return [d["col"] for d in columns]
 
+    def get_all_columns(self, dbname: str, **args) -> list[str]:
+        query = "SELECT COLUMN_NAME as col, TABLE_NAME as tbl FROM information_schema.columns limit 1000"
+        columns = self.run_query(query)
+        return [d["tbl"] + "." + d["col"] for d in columns]
+
     def show_tables_schema_dbs(self) -> list[DbCatalog]:
         dbname = "dbname"
         schema = "cschema"

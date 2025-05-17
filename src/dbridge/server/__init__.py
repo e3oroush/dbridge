@@ -55,6 +55,22 @@ def get_columns(
     )
 
 
+@app.get("/get_all_columns")
+def get_all_columns(
+    connection_id: str,
+    table_name: str | None = None,
+    dbname: str | None = None,
+    schema_name: str | None = None,
+) -> list[str]:
+    assert (con := connections.get_connection(connection_id))
+    return cache_value(
+        lambda: con.get_all_columns(
+            table_name=table_name, dbname=dbname, schema_name=schema_name
+        ),
+        ["get_columns", connection_id, table_name, dbname, schema_name],
+    )
+
+
 @app.get("/query_table")
 def query_table(
     connection_id: str,

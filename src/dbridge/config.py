@@ -10,9 +10,11 @@ class Settings(BaseSettings):
     # NOTE: Extra is needed to use validation_alias to replace value see https://github.com/pydantic/pydantic-settings/issues/148
     model_config = SettingsConfigDict(env_prefix="dbridge_", extra="allow")
     expiration_seconds: int = Field(120)
+    no_cols_fetch: int = Field(1000)
 
 
 settings = Settings()
 DEFAULT_LOGGING_LEVEL = settings.default_logging_level
 APP_NAME = settings.app_name
 EXPIRATION_SECONDS = settings.expiration_seconds
+NO_COLS_FETCH = settings.no_cols_fetch
