@@ -2,6 +2,7 @@ import pandas as pd
 
 from dbridge.adapters.capabilities import CapabilityEnums
 from dbridge.adapters.interfaces import DBAdapter
+from dbridge.config import NO_COLS_FETCH
 
 from .models import INSTALLED_ADAPTERS, DbCatalog
 
@@ -53,6 +54,20 @@ class SnowflakeAdapter(DBAdapter):
             query = f"select column_name as name from {dbname}.INFORMATION_SCHEMA.columns where table_schema='{schema_name.upper()}' and table_name='{table_name.upper()}';"
             rows = self.connection.cursor().execute(query)
             columns = self._fetch_rows_value_key(rows, "name")
+        return columns
+
+    def get_all_columns(self, dbname: str, **args) -> list[str]:
+        columns = []
+        if dbname:
+            query = f"select column_name as name, table_name as tbl from {dbname}.INFORMATION_SCHEMA.columns limit {NO_COLS_FETCH};"
+            rows = self.connection.cursor().execute(query)
+            columns = [
+                f"{tbl}.{col}"
+                for tbl, col in zip(
+                    self._fetch_rows_value_key(rows, "tbl"),
+                    self._fetch_rows_value_key(rows, "name"),
+                )
+            ]
         return columns
 
     def show_tables_schema_dbs(self) -> list[DbCatalog]:
